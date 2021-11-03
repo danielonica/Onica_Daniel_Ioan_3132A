@@ -23,24 +23,49 @@ namespace Onica_Daniel_Ioan
         bool TurnRight = false;
         bool StartMove = false;       
         KeyboardState lastKeyPressed;
-        const float rotation_speed = 180.0f;
-        float angle;
+        private readonly Randomizer rando;
+        private readonly Axes axes;
+        private Triangle triunghi;
+        private Cub cube;
+        private readonly CameraViz camera;
+
+   
         private const int XYZ_SIZE = 75;
+
         private const int colorMax = 255;
         private const int colorMin = 0;
-        private int redC = 0, greenC = 0, blueC = 0;
-        private const String FileName = @"C:\Users\Admin\Documents\VisualStudio facultate\Onica_Daniel_Ioan\Onica_Daniel_Ioan\CoordonateTriunghi.txt";
-        private bool showCube = true;
-        private bool  mouseRight, mouseLeft;
-        private int[] SeePort = new int[3];
+        private readonly Color DEFAULT_BKG_COLOR = Color.FromArgb(49, 50, 51);
 
+
+        private int[] ColorRed = new int[3];
+        private int[] ColorGreen = new int[3];
+        private int[] ColorBlue = new int[3];
+        private int Increment = 5;
+
+        private readonly string coordonateTriunghi = @"C:\Users\Admin\Documents\VisualStudio facultate\Onica_Daniel_Ioan\CoordonateTriunghi.txt";
+        private readonly string coorodnateCub = @"C:\Users\Admin\Documents\VisualStudio facultate\Onica_Daniel_Ioan\CoordonateCub.txt";
+  
+        private int[] SeePort = new int[3];
+        Color[] colors;
 
         public EgcLab2() : base(800, 600)
         {
             VSync = VSyncMode.On;
             KeyDown += Keyboard_KeyDown;
             SeePort[0] = SeePort[1] = SeePort[2] = 10;
-        
+            rando = new Randomizer();
+            axes = new Axes();
+            triunghi = Triangle.ReadCoordonates(coordonateTriunghi);
+            cube = new Cub(coorodnateCub);
+            camera = new CameraViz();
+            DisplayHelp();
+            colors = new Color[6];
+            for (int i = 0; i < 6; i++)
+                colors[i] = rando.RandomColor();
+
+            ColorRed[0] = ColorGreen[0] = ColorBlue[0] = 0;
+            ColorRed[1] = ColorGreen[1] = ColorBlue[1] = 100;
+            ColorRed[2] = ColorGreen[2] = ColorBlue[2] = 150;
         }
 
         public bool CheckIfInRangeColor(int color)
@@ -67,8 +92,12 @@ namespace Onica_Daniel_Ioan
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            GL.ClearColor(Color.MidnightBlue);
-           // GL.Enable(EnableCap.DepthTest);
+
+            GL.Enable(EnableCap.DepthTest);
+            GL.DepthFunc(DepthFunction.Less);
+
+            GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
+
         }
 
 
@@ -76,18 +105,23 @@ namespace Onica_Daniel_Ioan
 
         protected override void OnResize(EventArgs e)
         {
+
             base.OnResize(e);
 
-            GL.Viewport(0, 0, Width, Height);
+            // set background
+            GL.ClearColor(DEFAULT_BKG_COLOR);
 
-            //GL.MatrixMode(MatrixMode.Projection);
-            //GL.LoadIdentity();
-            //GL.Ortho(-10.0, 10.0, -10.0, 10.0, 0.0, 4.0);
-            double aspect_ratio = Width / (double)Height;
+            // set viewport
+            GL.Viewport(0, 0, this.Width, this.Height);
 
-            Matrix4 perspective = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver4, (float)aspect_ratio, 1, 64);
+            // set perspective
+            Matrix4 perspectiva = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver4, (float)this.Width / (float)this.Height, 1, 1024);
             GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadMatrix(ref perspective);
+            GL.LoadMatrix(ref perspectiva);
+
+
+            // set the eye
+            camera.SetCamera();
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -97,76 +131,9 @@ namespace Onica_Daniel_Ioan
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mouse = Mouse.GetState();
 
-
-
-            ///
-            /// Laborator 3 ---- Afisare in consola a RGB
-            ///
-            if (keyboard[OpenTK.Input.Key.G])
-            {
-                if (keyboard[OpenTK.Input.Key.Up])
-                {
-                    if (CheckIfInRangeColor(greenC))
-                    {
-                        greenC++;
-                        Console.WriteLine("Red: " + redC + " Green: " + greenC + " Blue: " + blueC);
-                    }
-                }
-                else if (keyboard[OpenTK.Input.Key.Down])
-                {
-                    if (CheckIfInRangeColor(greenC - 1))
-                    {
-                        greenC--;
-                        Console.WriteLine("Red: " + redC + " Green: " + greenC + " Blue: " + blueC);
-                    }
-                }
-            }
-
-            if (keyboard[OpenTK.Input.Key.R])
-            {
-                if (keyboard[OpenTK.Input.Key.Up])
-                {
-                    if (CheckIfInRangeColor(redC))
-                    {
-                        redC++;
-                        Console.WriteLine("Red: " + redC + " Green: " + greenC + " Blue: " + blueC);
-                    }
-                }
-                else if (keyboard[OpenTK.Input.Key.Down])
-                {
-                    if (CheckIfInRangeColor(redC - 1))
-                    {
-                        redC--;
-                        Console.WriteLine("Red: " + redC + " Ggreen: " + greenC + " Blue: " + blueC);
-                    }
-                }
-            }
-
-            if (keyboard[OpenTK.Input.Key.B])
-            {
-                if (keyboard[OpenTK.Input.Key.Up])
-                {
-                    if (CheckIfInRangeColor(blueC))
-                    {
-                        blueC++;
-                        Console.WriteLine("Red: " + redC + " Green: " + greenC + " Blue: " + blueC);
-                    }
-                }
-                else if (keyboard[OpenTK.Input.Key.Down])
-                {
-                    if (CheckIfInRangeColor(blueC - 1))
-                    {
-                        blueC--;
-                        Console.WriteLine("Red: " + redC + " Green: " + greenC + " Blue: " + blueC);
-                    }
-                }
-            }
-
-
             if (keyboard[Key.Escape])
             {
                 Exit();
-                return;
             }
 
             if (keyboard[Key.F11])
@@ -177,95 +144,191 @@ namespace Onica_Daniel_Ioan
                     this.WindowState = WindowState.Fullscreen;
             }
 
-
-
-            //Laborator 2 -------------------------------------
-
-
-            else if (keyboard[Key.R] && !keyboard.Equals(lastKeyPressed))
+            if (keyboard[Key.H] && !lastKeyPressed[Key.H])
             {
-                if (!start)
+                DisplayHelp();
+            }
+
+            if (keyboard[Key.B] && !lastKeyPressed[Key.B])
+            {
+                GL.ClearColor(rando.RandomColor());
+            }
+
+            if (keyboard[Key.K] && !lastKeyPressed[Key.K])
+            {
+                axes.ToggleVisibility();
+            }
+
+            if (keyboard[Key.P] && !lastKeyPressed[Key.P])
+            {
+                triunghi.ToggleVisibility();
+            }
+
+            if (keyboard[Key.C] && !lastKeyPressed[Key.L])
+            {
+                cube.ToggleVisibility();
+            }
+
+            /////Rezolvare exercitiu 3  ============ TEMA 4
+
+            if (keyboard[Key.Number1] && !lastKeyPressed[Key.Number1])
+            {
+                colors[0] = rando.RandomColor();
+            }
+
+            if (keyboard[Key.Number2] && !lastKeyPressed[Key.Number2])
+            {
+                colors[1] = rando.RandomColor();
+            }
+
+            if (keyboard[Key.Number3] && !lastKeyPressed[Key.Number3])
+            {
+                colors[2] = rando.RandomColor();
+            }
+
+            if (keyboard[Key.Number4] && !lastKeyPressed[Key.Number4])
+            {
+                colors[3] = rando.RandomColor();
+            }
+
+            if (keyboard[Key.Number5] && !lastKeyPressed[Key.Number5])
+            {
+                colors[4] = rando.RandomColor();
+            }
+
+            if (keyboard[Key.Number6] && !lastKeyPressed[Key.Number6])
+            {
+                colors[5] = rando.RandomColor();
+            }
+            ////////////////////
+
+            // camera control (isometric mode)
+            if (keyboard[Key.W])
+            {
+                camera.MoveForward();
+            }
+            if (keyboard[Key.S])
+            {
+                camera.MoveBackward();
+            }
+            if (keyboard[Key.A])
+            {
+                camera.MoveLeft();
+            }
+            if (keyboard[Key.D])
+            {
+                camera.MoveRight();
+            }
+            if (keyboard[Key.Q])
+            {
+                camera.MoveUp();
+            }
+            if (keyboard[Key.E])
+            {
+                camera.MoveDown();
+            }
+
+            else if (keyboard[Key.R])
+            {
+                if (ColorRed[0] < colorMax - Increment)
                 {
-                    start = true;
+                    ColorRed[0] += Increment;
                 }
-            }
-            else if (keyboard[Key.S] && !keyboard.Equals(lastKeyPressed))
-            {
-                if (start)
+                if (ColorRed[1] < colorMax - Increment)
                 {
-                    start = false;
+                    ColorRed[1] += Increment;
                 }
-            }
-            else if (keyboard[Key.Left] && !keyboard.Equals(lastKeyPressed))
-            {
-                if (TurnLeft)
-                    TurnLeft = false;
-                else
-                    TurnLeft = true;
-            }
-            else if (keyboard[Key.Right] && !keyboard.Equals(lastKeyPressed))
-            {
-                if (TurnRight)
-                    TurnRight = false;
-                else
-                    TurnRight = true;
-            }
-
-            if (mouse[MouseButton.Middle])
-            {
-                if (StartMove)
+                if (ColorRed[2] < colorMax - Increment)
                 {
-                    StartMove = false;
+                    ColorRed[2] += Increment;
                 }
-                else
+                DisplayColors();
+            }
+
+            else if (keyboard[Key.T])
+            {
+                if (ColorBlue[0] < colorMax - Increment)
                 {
-                    StartMove = true;
+                    ColorBlue[0] += Increment;
                 }
-            }
-
-            if (mouse[MouseButton.Middle])
-            {
-                if (StartMove)
+                if (ColorBlue[1] < colorMax - Increment)
                 {
-                    StartMove = false;
+                    ColorBlue[1] += Increment;
                 }
-                else
+                if (ColorBlue[2] < colorMax - Increment)
                 {
-                    StartMove = true;
+                    ColorBlue[2] += Increment;
                 }
+                DisplayColors();
             }
 
-
-            /// 
-            /// Schimbare unghi camera in functie de miscarea mouse-ului.
-            /// 
-
-            if (mouse.X < -50)
+            else if (keyboard[Key.Y])
             {
-                mouseLeft = true;
-                if (SeePort[0] > -10)
-                    SeePort[0]--;
-            }
-            else if (mouse.X > 100)
-            {
-                mouseRight = true;
-                if (SeePort[0] < 20)
-                    SeePort[0]++;
-            }
-            if (mouse.Y < -50)
-            {
-                mouseLeft = true;
-                if (SeePort[1] > -10)
-                    SeePort[1]--;
-            }
-            else if (mouse.Y > 100)
-            {
-                mouseRight = true;
-                if (SeePort[1] < 20)
-                    SeePort[1]++;
+                if (ColorGreen[0] < colorMax - Increment)
+                {
+                    ColorGreen[0] += Increment;
+                }
+                if (ColorGreen[1] < colorMax - Increment)
+                {
+                    ColorGreen[1] += Increment;
+                }
+                if (ColorGreen[2] < colorMax - Increment)
+                {
+                    ColorGreen[2] += Increment;
+                }
+                DisplayColors();
             }
 
+            else if (keyboard[Key.U])
+            {
+                if (ColorRed[0] > colorMax + Increment)
+                {
+                    ColorRed[0] -= Increment;
+                }
+                if (ColorRed[1] > colorMax + Increment)
+                {
+                    ColorRed[1] -= Increment;
+                }
+                if (ColorRed[2] > colorMax + Increment)
+                {
+                    ColorRed[2] -= Increment;
+                }
+                DisplayColors();
+            }
 
+            else if (keyboard[Key.I])
+            {
+                if (ColorBlue[0] > colorMax + Increment)
+                {
+                    ColorBlue[0] -= Increment;
+                }
+                if (ColorBlue[1] > colorMax + Increment)
+                {
+                    ColorBlue[1] -= Increment;
+                }
+                if (ColorBlue[2] > colorMax + Increment)
+                {
+                    ColorBlue[2] -= Increment;
+                }
+                DisplayColors();
+            }
+
+            else if (keyboard[Key.O])
+            {
+                if (ColorGreen[0] > colorMax + Increment)
+                {
+                    ColorGreen[0] -= Increment;
+                }
+                if (ColorGreen[1] > colorMax + Increment)
+                {
+                    ColorGreen[1] -= Increment;
+                }
+                if (ColorGreen[2] > colorMax + Increment)
+                {
+                    ColorGreen[2] -= Increment;
+                }
+                DisplayColors();
+            }
 
             lastKeyPressed = keyboard;
         }
@@ -273,36 +336,18 @@ namespace Onica_Daniel_Ioan
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
 
-            //Matrix4 lookat = Matrix4.LookAt(15, 15, 5, 0, 0, 0, 0, 1, 0);
-            Matrix4 lookat = Matrix4.LookAt(SeePort[0], SeePort[1], SeePort[2], 0, 0, 0, 0, 1, 0);
+            axes.Draw();
 
-            GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadMatrix(ref lookat);
+            triunghi.A.SetColor(Color.FromArgb(ColorRed[0], ColorBlue[0], ColorGreen[0]));
+            triunghi.B.SetColor(Color.FromArgb(ColorRed[1], ColorBlue[1], ColorGreen[1]));
+            triunghi.C.SetColor(Color.FromArgb(ColorRed[2], ColorBlue[2], ColorGreen[2]));
+            triunghi.DrawMeColor();
 
-            DrawAxes();
+            cube.DrawMeColor(colors);
 
-            Triangle trg1 = Triangle.ReadCoordonates(FileName); //////////// Triunghi
-            trg1.DrawMe(redC, greenC, blueC);
-
-
-            angle += rotation_speed * (float)e.Time;
-
-            if (start)
-            {
-                if (TurnRight)
-                {
-                    GL.Rotate(angle, 1.0f, -1.0f, 0.0f);
-                }
-                else if (TurnLeft)
-                {
-                    GL.Rotate(angle, 1.0f, 1.0f, 0.0f);
-                }
-
-               
-                DrawCube();
-            }
             this.SwapBuffers();
         }
 
@@ -375,14 +420,29 @@ namespace Onica_Daniel_Ioan
             GL.Vertex3(0, 0, XYZ_SIZE);
             GL.End();
         }
-
-        static void Main()
+        private void DisplayHelp()
         {
-            using (EgcLab2 project = new EgcLab2())
-            {
-                project.Run(30.0, 0.0);
-            }
+            Console.WriteLine("FUNCTIONALITATE");
+            Console.WriteLine(" H - help menu");
+            Console.WriteLine(" ESC parasire aplicatie");
+            Console.WriteLine(" F11 fullscreen");
+            Console.WriteLine(" K view axe");
+            Console.WriteLine(" P triunghi on/off");
+            Console.WriteLine(" C cub on/off");
+            Console.WriteLine(" B background culoare");
+            Console.WriteLine(" R-T-Y - culoare triunghi size-up");
+            Console.WriteLine(" U,I,O - culoare triunghi size-down)");
+            Console.WriteLine(" 1,2,3,4,5,6 culoare fete cub");
+            Console.WriteLine(" W,A,S,D - camera deplasare");
         }
+
+        private void DisplayColors()
+        {
+            Console.WriteLine("Setul A :" + ColorRed[0].ToString() + " - " + ColorBlue[0].ToString() + " - " + ColorGreen[0].ToString());
+            Console.WriteLine("Setul B :" + ColorRed[1].ToString() + " - " + ColorBlue[1].ToString() + " - " + ColorGreen[1].ToString());
+            Console.WriteLine("Setul C :" + ColorRed[2].ToString() + " - " + ColorBlue[2].ToString() + " - " + ColorGreen[2].ToString() + "\n");
+        }
+
     }
 }
 

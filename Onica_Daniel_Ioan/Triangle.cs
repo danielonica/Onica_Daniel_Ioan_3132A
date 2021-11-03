@@ -4,24 +4,42 @@ using System.IO;
 
 namespace Onica_Daniel_Ioan
 {
-    internal class Triangle : NewPoint
+    internal class Triangle 
     {
-        private NewPoint A, B, C;
-        public bool IsDrawable { get; set; }
+        public NewPoint A, B, C;
+        private bool isDrawable;
 
+        public Triangle()
+        {
+            isDrawable = true;
+            A = new NewPoint(5, 2, 0, Color.DarkGoldenrod);
+            B = new NewPoint(5, 5, 0, Color.DeepPink);
+            C = new NewPoint(10, 5, 0, Color.DarkKhaki);
+        }
+
+        public Triangle(NewPoint P1, NewPoint P2, NewPoint P3)
+        {
+            isDrawable = true;
+            A = P1;
+            B = P2;
+            C = P3;
+            A.SetColor(Color.DarkGoldenrod);
+            B.SetColor(Color.DeepPink);
+            C.SetColor(Color.DarkKhaki);
+        }
         public void Hide()
         {
-            IsDrawable = false;
+            isDrawable = false;
         }
 
         public void Show()
         {
-            IsDrawable = true;
+            isDrawable = true;
         }
 
         public void ToggleVisibility()
         {
-            if (IsDrawable == true)
+            if (isDrawable == true)
             {
                 Hide();
             }
@@ -33,57 +51,48 @@ namespace Onica_Daniel_Ioan
 
         public void ManualTriangle()
         {
-            IsDrawable = true;
+            isDrawable = true;
 
             A = new NewPoint(5, 2, 0, Color.DeepPink);
             B = new NewPoint(8, 8, 0, Color.DeepPink);
             C = new NewPoint(1, 1, 0, Color.DeepPink);
         }
 
-        public Triangle()
-        {
-        }
+       
 
-        public Triangle(NewPoint a, NewPoint b, NewPoint c)
+        public void DrawMe(Triangle T)
         {
-            IsDrawable = true;
-
-            A = new NewPoint(a.getX(), a.getY(), a.getZ(), a.getColor());
-            B = new NewPoint(b.getX(), b.getY(), b.getZ(), b.getColor());
-            C = new NewPoint(c.getX(), c.getY(), c.getZ(), c.getColor());
-        }
-
-        public void DrawMe()
-        {
-            if (IsDrawable == false)
+            if (isDrawable)
             {
-                return;
+                GL.Begin(PrimitiveType.Triangles);
+
+                GL.Color3(T.A.pointColor);
+                GL.Vertex3(T.A.X, T.A.Y, T.A.Z);
+                GL.Color3(T.B.pointColor);
+                GL.Vertex3(T.B.X, T.B.Y, T.B.Z);
+                GL.Color3(T.C.pointColor);
+                GL.Vertex3(T.C.X, T.C.Y, T.C.Z);
+
+                GL.End();
             }
-
-            GL.Begin(PrimitiveType.Triangles);
-
-            GL.Color3(A.getColor());
-            GL.Vertex3(A.getX(), A.getY(), A.getZ());
-            GL.Color3(B.getColor());
-            GL.Vertex3(B.getX(), B.getY(), B.getZ());
-            GL.Color3(C.getColor());
-            GL.Vertex3(C.getX(), C.getY(), C.getZ());
-
-            GL.End();
         }
 
-        public void DrawMe(int red, int green, int blue)
+        public void DrawMeColor()
         {
-            GL.Begin(PrimitiveType.Triangles);
+            if (isDrawable)
+            {
 
-            GL.Color3(Color.FromArgb(red, 0, 0));
-            GL.Vertex3(A.getX(), A.getY(), A.getZ());
-            GL.Color3(Color.FromArgb(0, green, 0));
-            GL.Vertex3(B.getX(), B.getY(), B.getZ());
-            GL.Color3(Color.FromArgb(0, 0, blue));
-            GL.Vertex3(C.getX(), C.getY(), C.getZ());
+                GL.Begin(PrimitiveType.TriangleStrip);
 
-            GL.End();
+                GL.Color3(A.pointColor);
+                GL.Vertex3(A.X, A.Y, A.Z);
+                GL.Color3(B.pointColor);
+                GL.Vertex3(B.X, B.Y, B.Z);
+                GL.Color3(C.pointColor);
+                GL.Vertex3(C.X, C.Y, C.Z);
+
+                GL.End();
+            }
         }
 
         public static Triangle ReadCoordonates(string FileName)

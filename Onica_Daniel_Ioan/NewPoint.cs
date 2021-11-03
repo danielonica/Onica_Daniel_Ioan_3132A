@@ -2,16 +2,21 @@
 
 namespace Onica_Daniel_Ioan
 {
-    internal class NewPoint
+     class NewPoint
     {
-        private int X;
-        private int Y;
-        private int Z;
-        private Color color = Color.Black;
+        public int X;
+        public int Y;
+        public int Z;
+        public Color pointColor;
 
 
         public NewPoint()
         {
+            X = 0;
+            Y = 0;
+            Z = 0;
+            pointColor = Color.Black;
+
         }
 
         public NewPoint(int x, int y, int z)
@@ -19,6 +24,8 @@ namespace Onica_Daniel_Ioan
             X = x;
             Y = y;
             Z = z;
+            pointColor = Color.Black;
+
         }
 
         public NewPoint(int x, int y, int z, Color color)
@@ -26,28 +33,28 @@ namespace Onica_Daniel_Ioan
             X = x;
             Y = y;
             Z = z;
-            this.color = color;
+            pointColor = Color.Black;
         }
 
 
-     
 
-        public void setColor(Color color)
+
+        public void SetColor(Color color)
         {
-            this.color = color;
+            pointColor = Color.Black;
         }
 
-        public void setX(int x)
+        public void SetX(int x)
         {
             X = x;
         }
 
-        public void setY(int y)
+        public void SetY(int y)
         {
             Y = y;
         }
 
-        public void setZ(int z)
+        public void SetZ(int z)
         {
             Z = z;
         }
@@ -55,22 +62,23 @@ namespace Onica_Daniel_Ioan
         
 
 
-        public Color getColor()
+        public Color GetColor()
         {
-            return color;
+            return pointColor;
+;
         }
 
-        public int getX()
+        public int GetX()
         {
             return X;
         }
 
-        public int getY()
+        public int GetY()
         {
             return Y;
         }
 
-        public int getZ()
+        public int GetZ()
         {
             return Z;
         }
